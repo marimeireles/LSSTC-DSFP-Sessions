@@ -1,0 +1,86 @@
+# Search algorithms
+
+import random 
+
+python_list = [random.random() for x in range(10000000)]
+python_list.append(10)
+random.shuffle(python_list)
+
+import numpy as np
+
+np_array = np.random.rand(10000000)
+np_array = np.append(np_array, 10)
+np.random.shuffle(np_array)
+
+%timeit linear_search(python_list, 10)
+...
+
+# List comprehensions
+
+def foo(df):
+    for ind in df.index:
+        integrate_f(df['a'][ind], df['b'][ind], df['N'][ind])
+
+%timeit foo(df)
+%timeit df.apply(lambda x: integrate_f(x["a"], x["b"], x["N"]), axis=1)
+%prun -l 4 df.apply(lambda x: integrate_f(x["a"], x["b"], x["N"]), axis=1)
+
+# Optimizing Python functions
+
+def vowel_count(sentence):
+    sentence = sentence.casefold()
+    return sum(sentence.count(vowel) for vowel in 'aeiouAEIOU')
+
+@lru_cache(maxsize=16)
+def steps_to(stair):
+    if stair == 1:
+        return 1
+    elif stair == 2:
+        return 2
+    elif stair == 3:
+        return 4
+    else:
+        return (steps_to(stair - 3)
+                + steps_to(stair - 2)
+                + steps_to(stair - 1))
+
+# Numba
+
+@njit(fastmath=False)
+def do_sum(A):
+    acc = 0.
+    # without fastmath, this loop must accumulate in strict order
+    for x in A:
+        acc += np.sqrt(x)
+    return acc
+
+@njit(fastmath=True)
+def do_sum_fast(A):
+    acc = 0.
+    # with fastmath, the reduction can be vectorized as floating point
+    # reassociation is permitted.
+    for x in A:
+        acc += np.sqrt(x)
+    return acc
+
+# Interacting with I/O
+
+import sys
+import csv
+
+with open('random.csv', mode='w') as file:
+    file_writer = csv.writer(file, delimiter=',', quotechar='"', quoting=csv.QUOTE_MINIMAL)
+    file_writer.writerow(['numbers'])
+
+    for _ in range(10):
+        file_writer.writerow([1])
+
+file.close()
+
+def foo():
+    with open('random.csv', mode='r') as file:
+        datareader = csv.reader(file)
+        for row in datareader:
+            row += '1'
+
+%timeit foo()
